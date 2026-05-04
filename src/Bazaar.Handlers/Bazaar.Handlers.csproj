@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bazaar.Core\Bazaar.Core.csproj" />
+    <ProjectReference Include="..\Bazaar.Data\Bazaar.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DDDHelpers" Version="1.0.14" />
+    <PackageReference Include="Extensions.Sliding" Version="1.0.14" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+      <PackageReference Include="Extensions.Http" Version="0.0.30" />
+      
+    <PackageReference Include="Infra" Version="2.0.32" />
+    <PackageReference Include="Infra.Common.Decorators" Version="2.0.32" />
+    <PackageReference Include="Infra.EFCore" Version="2.0.25" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

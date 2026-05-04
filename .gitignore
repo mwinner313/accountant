@@ -1,0 +1,116 @@
+# Build results
+bin/
+obj/
+out/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+*.nuget.props
+*.nuget.targets
+
+# .NET Core / .NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Entity Framework
+*.mdf
+*.ldf
+
+# IIS Express
+/.vs/
+/wwwroot/
+/iisexpress/
+
+# Publish output
+publish/
+*.publish.xml
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Coverlet / Test results
+coverage/
+TestResults/
+
+# dotCover
+*.dotCover
+
+# NCrunch
+*.ncrunch*
+.*crunch*.local.xml
+
+# StyleCop
+StyleCopReport.xml
+
+# Backup & temp files
+*.bak
+*.tmp
+*.temp
+
+# Azure
+*.azurePubxml
+
+# Rider
+.idea/
+
+# Local settings (be careful with secrets)
+appsettings.Development.json
+appsettings.Local.json
+
+# Blazor / WebAssembly
+wwwroot/_framework/
+wwwroot/lib/
+
+# Node (if frontend included)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+
+# Docker
+docker-compose.override.yml
+
+# Generated files
+Generated_Code/
+
+# SQL Server
+*.mdf
+*.ldf
+
+# Misc
+*.cache
+*.pdb
+*.mdb
