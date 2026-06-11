@@ -9,8 +9,6 @@ import type {
   FactorDetailModel,
   FactorTypeValue
 } from '@/api/endpoints/factors'
-import { DevBypassError } from '@/api/http'
-
 export const useFactorStore = defineStore('factors', () => {
   const items = ref<CachedFactor[]>([])
   const detail = ref<FactorDetailModel | null>(null)
@@ -29,7 +27,7 @@ export const useFactorStore = defineStore('factors', () => {
       try {
         await repo.pullRemote(shopId, type ?? null)
       } catch (e: any) {
-        if (!(e instanceof DevBypassError)) error.value = e?.message ?? 'fetch-failed'
+        error.value = e?.message ?? 'fetch-failed'
       }
       await loadLocal(shopId, type ?? null)
     } finally {

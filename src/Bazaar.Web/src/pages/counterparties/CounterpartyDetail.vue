@@ -7,7 +7,11 @@ import { useFactorStore } from '@/stores/factors'
 import { getCounterparty, type CounterpartyDetailModel } from '@/api/endpoints/counterparties'
 import { FactorType } from '@/api/endpoints/factors'
 import { toJalali } from '@/i18n/format'
-import { DevBypassError } from '@/api/http'
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, ChevronLeft } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,7 +33,7 @@ async function reload() {
   try {
     detail.value = await getCounterparty(cpId.value)
   } catch (e: any) {
-    if (!(e instanceof DevBypassError)) loadDetailError.value = e?.message ?? t('app.error')
+    loadDetailError.value = e?.message ?? t('app.error')
   }
   const shopId = shops.activeShopId
   if (shopId) {
@@ -50,13 +54,15 @@ function openFactor(factorId: string) {
 <template>
   <PageHeader :title="detail?.fullName ?? t('factors.cp_detail')">
     <template #actions>
-      <Button icon="pi pi-arrow-right" text rounded @click="router.back()" />
+      <Button variant="ghost" size="icon" @click="router.back()">
+        <ArrowRight class="size-4" />
+      </Button>
     </template>
   </PageHeader>
 
-  <Message v-if="loadDetailError" severity="error" :closable="false" class="mb-3">
-    {{ loadDetailError }}
-  </Message>
+  <Alert v-if="loadDetailError" variant="destructive" class="mb-3">
+    <AlertDescription>{{ loadDetailError }}</AlertDescription>
+  </Alert>
 
   <template v-else-if="detail">
     <section v-if="detail.phones.length" class="block">
@@ -77,11 +83,11 @@ function openFactor(factorId: string) {
     </section>
 
     <h3 class="section-title">{{ t('factors.cp_factors_title') }}</h3>
-    <ProgressBar v-if="factors.loading" mode="indeterminate" style="height: 3px" />
+    <Progress v-if="factors.loading" class="h-1 animate-pulse" :model-value="undefined" />
 
     <EmptyState
       v-if="!factors.loading && cpFactors.length === 0"
-      icon="pi-receipt"
+      icon="receipt"
       :hint="t('factors.cp_no_factors')"
     />
 
@@ -93,15 +99,14 @@ function openFactor(factorId: string) {
         @click="openFactor(f.factorId)"
       >
         <div class="avatar" :class="{ buy: f.type === FactorType.Buy }">
-          <i
-            :class="['pi', f.type === FactorType.Buy ? 'pi-arrow-down-left' : 'pi-arrow-up-right']"
-          />
+          <ArrowDownLeft v-if="f.type === FactorType.Buy" class="size-5" />
+          <ArrowUpRight v-else class="size-5" />
         </div>
         <div class="list-card__body">
           <div class="list-card__title">
             {{ f.type === FactorType.Buy ? t('factors.type_buy') : t('factors.type_sell') }}
-            <Tag v-if="f.isReversed" :value="t('factors.reversed')" severity="danger" />
-            <Tag v-if="f._local" value="آفلاین" severity="info" />
+            <Badge v-if="f.isReversed" variant="destructive">{{ t('factors.reversed') }}</Badge>
+            <Badge v-if="f._local" variant="secondary">آفلاین</Badge>
           </div>
           <div class="list-card__sub">
             {{ toJalali(f.date) }} • {{ t('factors.item_count', { count: f.itemCount }) }}
@@ -109,7 +114,7 @@ function openFactor(factorId: string) {
             <span v-if="f.notes" class="notes">{{ f.notes }}</span>
           </div>
         </div>
-        <i class="pi pi-angle-left muted" />
+        <ChevronLeft class="size-5 muted" />
       </div>
     </div>
   </template>
@@ -134,7 +139,7 @@ function openFactor(factorId: string) {
 .bank-card {
   padding: 0.75rem;
   border-radius: 10px;
-  border: 1px solid var(--p-content-border-color);
+  border: 1px solid var(--border);
   margin-bottom: 0.5rem;
 }
 .bank-line {
@@ -156,11 +161,11 @@ function openFactor(factorId: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--p-primary-100, #e0e7ff);
-  color: var(--p-primary-color);
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  color: var(--primary);
   &.buy {
-    background: var(--p-green-100, #dcfce7);
-    color: var(--p-green-700, #15803d);
+    background: oklch(0.95 0.05 145);
+    color: oklch(0.42 0.14 145);
   }
 }
 .dot {

@@ -5,8 +5,6 @@ import * as api from '@/api/endpoints/counterparties'
 import { flushOutbox } from '@/sync/syncEngine'
 import type { CachedCounterparty } from '@/db/db'
 import type { CounterpartyListModel, CreateCounterpartyPayload } from '@/api/endpoints/counterparties'
-import { DevBypassError } from '@/api/http'
-
 export const useCounterpartyStore = defineStore('counterparties', () => {
   const items = ref<CachedCounterparty[]>([])
   const loading = ref(false)
@@ -24,7 +22,7 @@ export const useCounterpartyStore = defineStore('counterparties', () => {
       try {
         await repo.pullRemote(search ?? null)
       } catch (e: any) {
-        if (!(e instanceof DevBypassError)) error.value = e?.message ?? 'fetch-failed'
+        error.value = e?.message ?? 'fetch-failed'
       }
       await loadLocal()
     } finally {
@@ -38,16 +36,13 @@ export const useCounterpartyStore = defineStore('counterparties', () => {
     try {
       const res = await api.listCounterparties({ skip: 0, take: 30, search: q || undefined })
       return res.items
-    } catch (e) {
-      if (e instanceof DevBypassError) {
-        const all = await repo.getAll()
-        if (!q) return all.map(c => ({ counterpartyId: c.counterpartyId, fullName: c.fullName }))
-        const low = q.toLowerCase()
-        return all
-          .filter(c => c.fullName.toLowerCase().includes(low))
-          .map(c => ({ counterpartyId: c.counterpartyId, fullName: c.fullName }))
-      }
-      throw e
+    } catch {
+      const all = await repo.getAll()
+      if (!q) return all.map(c => ({ counterpartyId: c.counterpartyId, fullName: c.fullName }))
+      const low = q.toLowerCase()
+      return all
+        .filter(c => c.fullName.toLowerCase().includes(low))
+        .map(c => ({ counterpartyId: c.counterpartyId, fullName: c.fullName }))
     }
   }
 

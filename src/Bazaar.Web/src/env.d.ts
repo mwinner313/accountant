@@ -3,11 +3,8 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_URL: string
-  readonly VITE_IDENTITY_URL: string
   readonly VITE_OAUTH_CLIENT_ID: string
   readonly VITE_OAUTH_SCOPE: string
-  readonly VITE_DEV_OTP_HINT?: string
-  readonly VITE_DEV_BYPASS_AUTH?: string
 }
 
 interface ImportMeta {

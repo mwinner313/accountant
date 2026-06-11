@@ -15,6 +15,6 @@ public class FactorItemConfig : IEntityTypeConfiguration<FactorItem>
         builder.Property(p => p.ProductId).IsRequired();
         builder.Property(p => p.Amount).HasPrecision(18, 4).IsRequired();
         builder.Property(p => p.UnitPrice).HasPrecision(18, 2).IsRequired();
-        builder.Property(p => p.CreatedOn).HasPrecision(0).HasDefaultValueSql("(getdate())");
+        builder.Property(p => p.CreatedOn).HasPrecision(0);
     }
 }

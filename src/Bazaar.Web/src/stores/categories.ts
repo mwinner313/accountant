@@ -3,8 +3,6 @@ import { ref } from 'vue'
 import * as repo from '@/db/repositories/categories'
 import { flushOutbox } from '@/sync/syncEngine'
 import type { CachedCategory } from '@/db/db'
-import { DevBypassError } from '@/api/http'
-
 export const useCategoryStore = defineStore('categories', () => {
   const items = ref<CachedCategory[]>([])
   const loading = ref(false)
@@ -22,7 +20,7 @@ export const useCategoryStore = defineStore('categories', () => {
       try {
         await repo.pullRemote(shopId)
       } catch (e: any) {
-        if (!(e instanceof DevBypassError)) error.value = e?.message ?? 'fetch-failed'
+        error.value = e?.message ?? 'fetch-failed'
       }
       await loadLocal(shopId)
     } finally {

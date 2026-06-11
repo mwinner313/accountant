@@ -4,8 +4,6 @@ import * as repo from '@/db/repositories/products'
 import { flushOutbox } from '@/sync/syncEngine'
 import type { CachedProduct } from '@/db/db'
 import type { CreateProductPayload, ProductDetailModel } from '@/api/endpoints/products'
-import { DevBypassError } from '@/api/http'
-
 export const useProductStore = defineStore('products', () => {
   const items = ref<CachedProduct[]>([])
   const detail = ref<ProductDetailModel | null>(null)
@@ -24,7 +22,7 @@ export const useProductStore = defineStore('products', () => {
       try {
         await repo.pullRemote(shopId, filter)
       } catch (e: any) {
-        if (!(e instanceof DevBypassError)) error.value = e?.message ?? 'fetch-failed'
+        error.value = e?.message ?? 'fetch-failed'
       }
       await loadLocal(shopId, filter)
     } finally {

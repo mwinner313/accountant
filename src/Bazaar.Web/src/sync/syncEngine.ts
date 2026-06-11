@@ -1,6 +1,5 @@
 import * as outbox from '@/db/outbox'
 import { db } from '@/db/db'
-import { isDevBypassEnabled } from '@/auth/devBypass'
 
 import * as shopsApi from '@/api/endpoints/shops'
 import * as categoriesApi from '@/api/endpoints/categories'
@@ -26,7 +25,6 @@ export interface SyncResult {
 
 export async function flushOutbox(): Promise<SyncResult> {
   if (running) return { drained: 0, failed: 0 }
-  if (isDevBypassEnabled()) return { drained: 0, failed: 0 }
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     return { drained: 0, failed: 0 }
   }

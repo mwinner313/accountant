@@ -1,6 +1,5 @@
 import axios, { AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'
 import { authStorage, type TokenSet } from '@/auth/tokenStorage'
-import { isDevBypassEnabled } from '@/auth/devBypass'
 import { refreshAccessToken } from './identity'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
@@ -11,21 +10,9 @@ export const api: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
-export class DevBypassError extends Error {
-  constructor() {
-    super('dev-bypass: api call short-circuited')
-    this.name = 'DevBypassError'
-  }
-}
-
 let refreshPromise: Promise<TokenSet | null> | null = null
 
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-  if (isDevBypassEnabled()) {
-    // No backend in dev-bypass mode — fail fast, silently. The repository layer
-    // catches the rejection and keeps showing the seeded Dexie data.
-    throw new DevBypassError()
-  }
   const tokens = await authStorage.load()
   if (tokens?.access_token) {
     config.headers = config.headers ?? {}

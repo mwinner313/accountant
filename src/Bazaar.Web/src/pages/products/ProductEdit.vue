@@ -6,15 +6,25 @@ import { useShopStore } from '@/stores/shops'
 import { useProductStore } from '@/stores/products'
 import { useCategoryStore } from '@/stores/categories'
 import { useProductPropertyStore } from '@/stores/productProperties'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import type { CreateProductPayload } from '@/api/endpoints/products'
+import { ArrowRight, Check } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 defineProps<{ id?: string }>()
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const shops = useShopStore()
 const products = useProductStore()
 const cats = useCategoryStore()
@@ -33,6 +43,20 @@ const form = ref<CreateProductPayload>({
 })
 
 const propEdits = ref<Record<string, string>>({})
+
+const categorySelect = computed({
+  get: () => (form.value.categoryId == null ? 'none' : String(form.value.categoryId)),
+  set: (v: string) => {
+    form.value.categoryId = v === 'none' ? null : v
+  }
+})
+
+const pictureInput = computed({
+  get: () => form.value.picture ?? '',
+  set: (v: string) => {
+    form.value.picture = v || null
+  }
+})
 
 async function reload() {
   if (!shops.activeShopId) return
@@ -61,16 +85,16 @@ watch(() => route.params.id, reload)
 async function save() {
   if (!shops.activeShopId) return
   if (!form.value.name.trim() || !form.value.unit.trim()) {
-    toast.add({ severity: 'warn', summary: t('validation.required'), life: 2000 })
+    toast.warning(t('validation.required'))
     return
   }
   if (isNew.value) {
     const created = await products.create(shops.activeShopId, { ...form.value })
-    toast.add({ severity: 'success', summary: t('app.saved_locally'), life: 2000 })
+    toast.success(t('app.saved_locally'))
     router.replace({ name: 'product-edit', params: { id: created.productId } })
   } else if (id.value) {
     await products.update(shops.activeShopId, id.value, { ...form.value })
-    toast.add({ severity: 'success', summary: t('app.saved_locally'), life: 2000 })
+    toast.success(t('app.saved_locally'))
   }
 }
 
@@ -78,74 +102,106 @@ async function saveProperty(propertyId: string) {
   if (!shops.activeShopId || !id.value) return
   const value = propEdits.value[propertyId] ?? ''
   await products.setProperty(shops.activeShopId, id.value, propertyId, value)
-  toast.add({ severity: 'success', summary: t('app.saved_locally'), life: 1500 })
+  toast.success(t('app.saved_locally'))
 }
 </script>
 
 <template>
   <PageHeader :title="isNew ? t('products.new') : t('app.edit')">
     <template #actions>
-      <Button icon="pi pi-arrow-right" text rounded @click="router.back()" />
+      <Button variant="ghost" size="icon" @click="router.back()">
+        <ArrowRight class="size-4" />
+      </Button>
     </template>
   </PageHeader>
 
   <form class="form" @submit.prevent="save">
-    <label class="field">
-      <span class="label">{{ t('products.name_label') }}</span>
-      <InputText v-model="form.name" fluid />
-    </label>
+    <div class="field">
+      <Label for="product-name">{{ t('products.name_label') }}</Label>
+      <Input id="product-name" v-model="form.name" class="mt-1" />
+    </div>
 
     <div class="row">
-      <label class="field">
-        <span class="label">{{ t('products.unit_label') }}</span>
-        <InputText v-model="form.unit" :placeholder="t('products.unit_placeholder')" fluid />
-      </label>
-      <label class="field">
-        <span class="label">{{ t('products.category') }}</span>
-        <Select
-          v-model="form.categoryId"
-          :options="[{ categoryId: null, name: t('products.no_category') }, ...cats.items]"
-          optionLabel="name"
-          optionValue="categoryId"
-          fluid
+      <div class="field">
+        <Label for="product-unit">{{ t('products.unit_label') }}</Label>
+        <Input
+          id="product-unit"
+          v-model="form.unit"
+          :placeholder="t('products.unit_placeholder')"
+          class="mt-1"
         />
-      </label>
+      </div>
+      <div class="field">
+        <Label>{{ t('products.category') }}</Label>
+        <Select v-model="categorySelect" class="mt-1">
+          <SelectTrigger class="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">{{ t('products.no_category') }}</SelectItem>
+            <SelectItem
+              v-for="c in cats.items"
+              :key="c.categoryId"
+              :value="String(c.categoryId)"
+            >
+              {{ c.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
 
     <div class="row">
-      <label class="field">
-        <span class="label">{{ t('products.sell_price') }}</span>
-        <InputNumber v-model="form.sellPrice" :min="0" :minFractionDigits="0" fluid />
-      </label>
-      <label class="field">
-        <span class="label">{{ t('products.buy_price') }}</span>
-        <InputNumber v-model="form.buyPrice" :min="0" :minFractionDigits="0" fluid />
-      </label>
+      <div class="field">
+        <Label for="sell-price">{{ t('products.sell_price') }}</Label>
+        <Input
+          id="sell-price"
+          type="number"
+          min="0"
+          :model-value="String(form.sellPrice)"
+          class="mt-1"
+          @update:model-value="v => (form.sellPrice = Number(v) || 0)"
+        />
+      </div>
+      <div class="field">
+        <Label for="buy-price">{{ t('products.buy_price') }}</Label>
+        <Input
+          id="buy-price"
+          type="number"
+          min="0"
+          :model-value="String(form.buyPrice)"
+          class="mt-1"
+          @update:model-value="v => (form.buyPrice = Number(v) || 0)"
+        />
+      </div>
     </div>
 
-    <label class="field">
-      <span class="label">{{ t('products.picture') }}</span>
-      <InputText v-model="form.picture" dir="ltr" fluid />
-    </label>
+    <div class="field">
+      <Label for="product-picture">{{ t('products.picture') }}</Label>
+      <Input id="product-picture" v-model="pictureInput" dir="ltr" class="mt-1" />
+    </div>
 
-    <Button type="submit" :label="t('app.save')" icon="pi pi-check" fluid class="save-btn" />
+    <Button type="submit" class="save-btn w-full">
+      <Check class="size-4" />
+      {{ t('app.save') }}
+    </Button>
   </form>
 
   <section v-if="!isNew && props.items.length" class="properties">
     <h3 class="section-title">{{ t('products.properties') }}</h3>
     <div v-for="p in props.items" :key="p.productPropertyId" class="prop-row">
       <div class="prop-name">{{ p.name }}</div>
-      <InputText
+      <Input
         v-model="propEdits[p.productPropertyId]"
         :placeholder="t('products.property_value')"
-        fluid
       />
       <Button
-        icon="pi pi-check"
-        size="small"
-        @click="saveProperty(p.productPropertyId)"
+        size="sm"
         :aria-label="t('products.save_property')"
-      />
+        @click="saveProperty(p.productPropertyId)"
+      >
+        <Check class="size-4" />
+      </Button>
     </div>
   </section>
 </template>
@@ -163,12 +219,6 @@ async function saveProperty(propertyId: string) {
 }
 .field {
   display: block;
-  .label {
-    display: block;
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin-bottom: 0.4rem;
-  }
 }
 .save-btn {
   margin-top: 0.5rem;

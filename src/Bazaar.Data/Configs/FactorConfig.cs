@@ -15,9 +15,6 @@ public class FactorConfig : IEntityTypeConfiguration<Factor>
         builder.Ignore(p => p.UncommittedChanges);
         builder.Ignore(p => p.Version);
 
-        builder.Property(p => p.Id).HasDefaultValueSql("NEWID()");
-        builder.Property(p => p.CreateDate).HasPrecision(0).HasDefaultValueSql("(getdate())");
-
         builder.Property(p => p.ShopId).IsRequired();
         builder.Property(p => p.Type).IsRequired();
         builder.Property(p => p.CounterpartyId).IsRequired(false);

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { Store } from '@lucide/vue'
 
 const { t } = useI18n()
 </script>
@@ -9,7 +10,7 @@ const { t } = useI18n()
     <div class="auth-card">
       <div class="auth-brand">
         <div class="auth-logo">
-          <i class="pi pi-shop" />
+          <Store class="size-8" />
         </div>
         <h1>{{ t('app.name') }}</h1>
         <p class="muted">{{ t('app.tagline') }}</p>
@@ -30,13 +31,13 @@ const { t } = useI18n()
   background:
     radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 40%),
     radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 45%),
-    var(--p-surface-50, #f8fafc);
+    var(--background);
 }
 .auth-card {
   width: 100%;
   max-width: 420px;
-  background: var(--p-content-background);
-  border: 1px solid var(--p-content-border-color);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 2rem 1.5rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -52,9 +53,8 @@ const { t } = useI18n()
     border-radius: 16px;
     align-items: center;
     justify-content: center;
-    background: var(--p-primary-color);
-    color: var(--p-primary-contrast-color);
-    font-size: 1.75rem;
+    background: var(--primary);
+    color: var(--primary-foreground);
     margin-bottom: 0.75rem;
   }
   h1 {
