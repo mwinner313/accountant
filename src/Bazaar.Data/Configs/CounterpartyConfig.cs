@@ -21,11 +21,13 @@ public class CounterpartyConfig : IEntityTypeConfiguration<Counterparty>
         builder.HasMany(c => c.Phones)
             .WithOne()
             .HasForeignKey(p => p.CounterpartyId)
+            .HasPrincipalKey(c => c.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(c => c.BankAccounts)
             .WithOne()
             .HasForeignKey(b => b.CounterpartyId)
+            .HasPrincipalKey(c => c.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(p => p.OwnerId);

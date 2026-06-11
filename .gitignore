@@ -114,3 +114,6 @@ Generated_Code/
 *.cache
 *.pdb
 *.mdb
+
+# Duende IdentityServer dev signing key
+**/tempkey.jwk

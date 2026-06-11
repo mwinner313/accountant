@@ -26,11 +26,13 @@ public class FactorConfig : IEntityTypeConfiguration<Factor>
         builder.HasMany(f => f.Items)
             .WithOne()
             .HasForeignKey(i => i.FactorId)
+            .HasPrincipalKey(f => f.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne<Counterparty>()
             .WithMany()
             .HasForeignKey(f => f.CounterpartyId)
+            .HasPrincipalKey(c => c.Id)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(f => f.CounterpartyId);
