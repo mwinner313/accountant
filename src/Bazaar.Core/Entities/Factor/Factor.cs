@@ -1,4 +1,4 @@
-﻿using Bazaar.Core.Entities.Factor.Events;
+using Bazaar.Core.Entities.Factor.Events;
 using Domain;
 using News.Domain;
 
@@ -8,17 +8,18 @@ public class Factor : AggregateRoot
 {
     private Factor() { }
 
-    public Factor(Guid shopId, FactorType type, string? notes, DateTime date,
+    public Factor(Guid shopId, FactorType type, Guid counterpartyId, string? notes, DateTime date,
         List<FactorItemData> items)
     {
         Guard.NotNullOrDefault(shopId, nameof(shopId));
+        Guard.NotNullOrDefault(counterpartyId, nameof(counterpartyId));
         Guard.NotNull(items, nameof(items));
 
         if (items.Count == 0)
             throw new ArgumentException("Factor must have at least one item.", nameof(items));
 
         var id = Guid.NewGuid();
-        var @event = new FactorCreated(id, shopId, type, notes, date, items);
+        var @event = new FactorCreated(id, shopId, type, counterpartyId, notes, date, items);
         ApplyChange(@event);
     }
 
@@ -39,6 +40,7 @@ public class Factor : AggregateRoot
         Id = @event.AggregateRootId;
         ShopId = @event.ShopId;
         Type = @event.FactorType;
+        CounterpartyId = @event.CounterpartyId;
         Notes = @event.Notes;
         Date = @event.Date;
         IsReversed = false;
@@ -59,6 +61,7 @@ public class Factor : AggregateRoot
 
     public int FactorId { get; set; }
     public Guid ShopId { get; private set; }
+    public Guid? CounterpartyId { get; private set; }
     public FactorType Type { get; private set; }
     public string? Notes { get; private set; }
     public DateTime Date { get; private set; }

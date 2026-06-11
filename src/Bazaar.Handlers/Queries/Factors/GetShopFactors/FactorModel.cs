@@ -5,6 +5,8 @@ namespace Bazaar.Handlers.Queries.Factors.GetShopFactors;
 public class FactorModel
 {
     public Guid FactorId { get; set; }
+    public Guid? CounterpartyId { get; set; }
+    public string? CounterpartyFullName { get; set; }
     public FactorType Type { get; set; }
     public string? Notes { get; set; }
     public DateTime Date { get; set; }

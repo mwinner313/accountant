@@ -6,6 +6,7 @@ namespace Bazaar.Handlers.Commands.Factors.Edit;
 public class EditFactorCommand : ICommand
 {
     public Guid FactorId { get; set; }
+    public Guid CounterpartyId { get; set; }
     public string? Notes { get; set; }
     public DateTime Date { get; set; }
     public List<EditFactorItemRequest> Items { get; set; } = new();

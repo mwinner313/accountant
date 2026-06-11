@@ -6,6 +6,7 @@ namespace Bazaar.Handlers.Commands.Factors.Create;
 public class CreateFactorCommand : ICommand
 {
     public Guid ShopId { get; set; }
+    public Guid CounterpartyId { get; set; }
     public FactorType Type { get; set; }
     public string? Notes { get; set; }
     public DateTime Date { get; set; }

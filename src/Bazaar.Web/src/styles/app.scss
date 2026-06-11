@@ -1,0 +1,192 @@
+@use 'primeicons/primeicons.css';
+@use './primevue.scss';
+
+:root {
+  --app-max-width: 720px;
+  --app-radius: 14px;
+  --app-bottom-nav-h: 64px;
+  --app-header-h: 56px;
+  --app-font-stack:
+    'Vazirmatn', 'IRANSansX', 'IRANSans', 'IRANYekan', 'Tahoma', system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+  font-family: var(--app-font-stack);
+  font-feature-settings: 'ss02', 'ss03';
+}
+
+html,
+body,
+input,
+textarea,
+button,
+select {
+  font-family: var(--app-font-stack);
+}
+
+// Optional override slot: if you have licensed IRANSansX woff2 files, drop them into
+// `public/fonts/` and uncomment the block below to make them win over Vazirmatn.
+//
+// @font-face {
+//   font-family: 'IRANSansX';
+//   src: url('/fonts/IRANSansX-Variable.woff2') format('woff2-variations');
+//   font-weight: 100 900;
+//   font-style: normal;
+//   font-display: swap;
+// }
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--p-surface-50, #f8fafc);
+  color: var(--p-text-color);
+  direction: rtl;
+  text-align: right;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin-inline: auto;
+  padding: 1rem;
+  padding-bottom: calc(var(--app-bottom-nav-h) + env(safe-area-inset-bottom) + 1rem);
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
+.muted {
+  color: var(--p-text-muted-color);
+}
+
+.fab {
+  position: fixed;
+  bottom: calc(var(--app-bottom-nav-h) + env(safe-area-inset-bottom) + 12px);
+  left: 16px;
+  z-index: 30;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--p-text-muted-color);
+
+  .pi {
+    font-size: 3rem;
+    opacity: 0.4;
+    display: block;
+    margin-bottom: 1rem;
+  }
+}
+
+.list-card {
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--app-radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: transform 0.1s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  .list-card__body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .list-card__title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0 0 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .list-card__sub {
+    font-size: 0.85rem;
+    color: var(--p-text-muted-color);
+  }
+
+  .list-card__price {
+    font-weight: 700;
+    color: var(--p-primary-color);
+  }
+}
+
+.offline-banner {
+  background: var(--p-yellow-100, #fef3c7);
+  color: var(--p-yellow-900, #713f12);
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--app-bottom-nav-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--p-content-background);
+  border-top: 1px solid var(--p-content-border-color);
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  z-index: 20;
+
+  a {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--p-text-muted-color);
+
+    .pi {
+      font-size: 1.25rem;
+    }
+
+    &.router-link-active {
+      color: var(--p-primary-color);
+      font-weight: 700;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .app-content {
+    max-width: 980px;
+  }
+}

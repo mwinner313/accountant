@@ -25,16 +25,24 @@ public class EditFactorCommandHandler : ICommandHandler<EditFactorCommand, Empty
             .Include(f => f.Items)
             .FirstAsync(f => f.Id == command.FactorId && !f.Deleted, cancellationToken);
 
-        // Step 1: reverse the original factor (raises FactorReversed → undoes inventory)
+        var shop = await _dbContext.Shops
+            .AsNoTracking()
+            .FirstAsync(s => s.Id == original.ShopId && !s.Deleted, cancellationToken);
+
+        var counterparty = await _dbContext.Counterparties
+            .AsNoTracking()
+            .FirstAsync(
+                c => c.Id == command.CounterpartyId && c.OwnerId == shop.OwnerId && !c.Deleted,
+                cancellationToken);
+
         original.Reverse();
         await _unitOfWork.Save(original);
 
-        // Step 2: create a new factor with the updated values (raises FactorCreated → applies inventory)
         var newItems = command.Items
             .Select(i => new FactorItemData(i.ProductId, i.Amount, i.UnitPrice))
             .ToList();
 
-        var newFactor = new Factor(original.ShopId, original.Type, command.Notes, command.Date, newItems);
+        var newFactor = new Factor(original.ShopId, original.Type, counterparty.Id, command.Notes, command.Date, newItems);
         _unitOfWork.Repo<Factor>().Add(newFactor);
         await _unitOfWork.Save(newFactor);
 

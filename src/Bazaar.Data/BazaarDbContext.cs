@@ -1,4 +1,5 @@
 using Bazaar.Core.Entities.Category;
+using Bazaar.Core.Entities.Counterparty;
 using Bazaar.Core.Entities.Factor;
 using Bazaar.Core.Entities.Product;
 using Bazaar.Core.Entities.ProductProperty;
@@ -18,6 +19,9 @@ public class BazaarDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductProperty> ProductProperties { get; set; }
     public DbSet<ProductPropertyValue> ProductPropertyValues { get; set; }
+    public DbSet<Counterparty> Counterparties { get; set; }
+    public DbSet<CounterpartyPhone> CounterpartyPhones { get; set; }
+    public DbSet<CounterpartyBankAccount> CounterpartyBankAccounts { get; set; }
     public DbSet<Factor> Factors { get; set; }
     public DbSet<FactorItem> FactorItems { get; set; }
 

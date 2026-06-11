@@ -28,11 +28,23 @@ public class GetFactorByIdQueryHandler : IQueryHandler<GetFactorByIdQuery, Facto
             .Select(p => new { p.Id, p.Name })
             .ToListAsync(cts);
 
+        string? counterpartyFullName = null;
+        if (factor.CounterpartyId.HasValue)
+        {
+            counterpartyFullName = await _dbContext.Counterparties
+                .AsNoTracking()
+                .Where(c => c.Id == factor.CounterpartyId)
+                .Select(c => c.FullName)
+                .FirstOrDefaultAsync(cts);
+        }
+
         return new FactorDetailModel
         {
             FactorId = factor.Id,
             ShopId = factor.ShopId,
             Type = factor.Type,
+            CounterpartyId = factor.CounterpartyId,
+            CounterpartyFullName = counterpartyFullName,
             Notes = factor.Notes,
             Date = factor.Date,
             IsReversed = factor.IsReversed,

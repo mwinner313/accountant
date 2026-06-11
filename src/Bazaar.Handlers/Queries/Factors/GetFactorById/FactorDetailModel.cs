@@ -6,6 +6,8 @@ public class FactorDetailModel
 {
     public Guid FactorId { get; set; }
     public Guid ShopId { get; set; }
+    public Guid? CounterpartyId { get; set; }
+    public string? CounterpartyFullName { get; set; }
     public FactorType Type { get; set; }
     public string? Notes { get; set; }
     public DateTime Date { get; set; }

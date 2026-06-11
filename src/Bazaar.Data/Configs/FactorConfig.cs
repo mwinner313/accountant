@@ -1,3 +1,4 @@
+using Bazaar.Core.Entities.Counterparty;
 using Bazaar.Core.Entities.Factor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,6 +20,7 @@ public class FactorConfig : IEntityTypeConfiguration<Factor>
 
         builder.Property(p => p.ShopId).IsRequired();
         builder.Property(p => p.Type).IsRequired();
+        builder.Property(p => p.CounterpartyId).IsRequired(false);
         builder.Property(p => p.Notes).HasMaxLength(1000).IsRequired(false);
         builder.Property(p => p.Date).HasPrecision(0).IsRequired();
         builder.Property(p => p.IsReversed).HasDefaultValue(false);
@@ -28,5 +30,12 @@ public class FactorConfig : IEntityTypeConfiguration<Factor>
             .WithOne()
             .HasForeignKey(i => i.FactorId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<Counterparty>()
+            .WithMany()
+            .HasForeignKey(f => f.CounterpartyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(f => f.CounterpartyId);
     }
 }

@@ -30,6 +30,13 @@ public class GetShopFactorsQueryHandler : IQueryHandler<GetShopFactorsQuery, Sli
             .Select(f => new FactorModel
             {
                 FactorId = f.Id,
+                CounterpartyId = f.CounterpartyId,
+                CounterpartyFullName = f.CounterpartyId == null
+                    ? null
+                    : _dbContext.Counterparties
+                        .Where(c => c.Id == f.CounterpartyId && !c.Deleted)
+                        .Select(c => c.FullName)
+                        .FirstOrDefault(),
                 Type = f.Type,
                 Notes = f.Notes,
                 Date = f.Date,

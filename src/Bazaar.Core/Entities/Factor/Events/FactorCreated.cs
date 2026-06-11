@@ -1,4 +1,4 @@
-﻿using Domain;
+using Domain;
 using News.Domain;
 
 namespace Bazaar.Core.Entities.Factor.Events;
@@ -11,12 +11,15 @@ public class FactorCreated : DomainEvent
     public DateTime Date { get; }
     public List<FactorItemData> Items { get; }
 
+    public Guid CounterpartyId { get; }
+
     public FactorCreated(Guid aggregateRootId, Guid shopId, FactorType factorType,
-        string? notes, DateTime date, List<FactorItemData> items)
+        Guid counterpartyId, string? notes, DateTime date, List<FactorItemData> items)
         : base(aggregateRootId)
     {
         ShopId = shopId;
         FactorType = factorType;
+        CounterpartyId = counterpartyId;
         Notes = notes;
         Date = date;
         Items = items;

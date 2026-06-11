@@ -7,6 +7,7 @@ public class CreateFactorCommandValidator : AbstractValidator<CreateFactorComman
     public CreateFactorCommandValidator()
     {
         RuleFor(x => x.ShopId).NotEmpty();
+        RuleFor(x => x.CounterpartyId).NotEmpty();
         RuleFor(x => x.Date).NotEmpty();
         RuleFor(x => x.Items).NotEmpty().WithMessage("Factor must have at least one item.");
         RuleForEach(x => x.Items).ChildRules(item =>
