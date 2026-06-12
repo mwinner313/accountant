@@ -1,6 +1,6 @@
 # Bazaar.Web
 
-Offline-first **Vue 3 + PrimeVue** PWA for the Bazaar accounting backend. Persian (Farsi) UI in **RTL**, written in TypeScript.
+Offline-first **Vue 3 + shadcn-vue** PWA for the Bazaar accounting backend. Persian (Farsi) UI in **RTL**, written in TypeScript.
 
 **Distribution targets:**
 
@@ -11,7 +11,7 @@ Offline-first **Vue 3 + PrimeVue** PWA for the Bazaar accounting backend. Persia
 ## Stack
 
 - Vue 3 + TypeScript + Vite
-- PrimeVue 4 (Aura theme) + PrimeIcons
+- shadcn-vue + Tailwind CSS 4 + Lucide icons
 - Pinia + Vue Router
 - vue-i18n (Persian, RTL)
 - vite-plugin-pwa (Workbox) — install + background sync
@@ -22,9 +22,7 @@ Offline-first **Vue 3 + PrimeVue** PWA for the Bazaar accounting backend. Persia
 ## Prerequisites
 
 - Node 20+ (tested on 22)
-- The backend running locally:
-  - `Bazaar.Api` on `http://localhost:5108` (Swagger at `/swagger`)
-  - `Bazaar.Identity` on `http://localhost:5209`
+- The backend running locally: `Bazaar.Api` on `http://localhost:5108` (API + auth + Swagger)
 
 ## Getting started
 
@@ -41,8 +39,8 @@ The Vite dev server runs on `http://localhost:5173` and proxies:
 | -------------- | ------------------------------- |
 | `/api/*`       | `VITE_API_URL` (Bazaar.Api)     |
 | `/swagger/*`   | `VITE_API_URL`                  |
-| `/connect/*`   | `VITE_IDENTITY_URL` (Identity)  |
-| `/.well-known` | `VITE_IDENTITY_URL`             |
+| `/connect/*`   | `VITE_API_URL` (same host)      |
+| `/.well-known` | `VITE_API_URL`                  |
 
 So CORS is **not** required during dev. For non-dev origins (production, TWA, Capacitor), you must enable CORS on the backend — see [Backend changes required](#backend-changes-required).
 
@@ -62,7 +60,7 @@ So CORS is **not** required during dev. For non-dev origins (production, TWA, Ca
 
 ## OTP login flow
 
-1. `POST /api/Otp/request` with `{ phoneNumber }` triggers an OTP. In development the backend **logs the code** instead of sending SMS — watch the `Bazaar.Identity` console. Set `VITE_DEV_OTP_HINT=true` to display a hint on the verify screen.
+1. `POST /api/Otp/request` with `{ phoneNumber }` triggers an OTP. For easy testing the fixed code **1111** is always accepted.
 2. `POST /connect/token` with `client_id=bazaar_mobile`, `grant_type=otp_verification`, `phone`, `otp_code`, `scope=openid profile phone bazaar_api offline_access` exchanges the OTP for an access token (24 h) + refresh token. Tokens are stored:
    - **Browser:** `localStorage` under `bazaar.auth.v1`.
    - **Capacitor (iOS/Android):** `@capacitor/preferences` (encrypted on iOS Keychain / Android Keystore where the platform exposes it).
@@ -157,10 +155,10 @@ src/
 ├── composables/    useOnline, usePendingSync
 ├── i18n/           vue-i18n + Persian locale + Jalali date helpers
 ├── router/         routes + auth/shop guards
-├── styles/         app.scss + primevue.scss (RTL overrides)
+├── styles/         tailwind.css + app.scss (RTL overrides)
 ├── types/          Auto-generated OpenAPI types
 ├── App.vue
-└── main.ts         PrimeVue + Pinia + Router + i18n wiring
+└── main.ts         Pinia + Router + i18n wiring
 ```
 
 ## Backend changes required
@@ -169,7 +167,7 @@ Two issues in the existing `.NET` backend that prevent the frontend from running
 
 ### 1. CORS
 
-Neither `Bazaar.Api` nor `Bazaar.Identity` configure CORS. Add to **both** `Program.cs` files (replace `*` with your allowed origins in production):
+`Bazaar.Api` does not configure CORS. Add to `Program.cs` (replace `*` with your allowed origins in production):
 
 ```csharp
 builder.Services.AddCors(opts =>
@@ -183,17 +181,7 @@ builder.Services.AddCors(opts =>
 app.UseCors();
 ```
 
-### 2. `Identity:Url` mismatch
-
-`src/Bazaar.Api/appsettings.json` currently sets:
-
-```json
-"Identity": { "Url": "https://localhost:5001" }
-```
-
-but `Bazaar.Identity` actually runs on `https://localhost:7012` (or `http://localhost:5209`). Either change `Identity:Url` to the real Identity origin, or change Identity's launch profile. Without this, `Bazaar.Api` cannot fetch the JWKS to validate tokens.
-
-### 3. Optional: list endpoint for product properties
+### 2. Optional: list endpoint for product properties
 
 The Settings page benefits from a `GET /api/shops/{shopId}/product-properties` endpoint to render the master list. Today, property names are only returned embedded inside `ProductDetailModel.Properties`. The frontend gracefully falls back to local cache, but a dedicated endpoint would close the gap.
 

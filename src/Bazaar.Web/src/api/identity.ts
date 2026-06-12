@@ -1,12 +1,12 @@
 import axios from 'axios'
 import type { TokenSet } from '@/auth/tokenStorage'
 
-const IDENTITY_URL = import.meta.env.VITE_IDENTITY_URL || ''
+const API_URL = import.meta.env.VITE_API_URL || ''
 const CLIENT_ID = import.meta.env.VITE_OAUTH_CLIENT_ID || 'bazaar_mobile'
 const SCOPE = import.meta.env.VITE_OAUTH_SCOPE || 'openid profile phone bazaar_api offline_access'
 
 const identityClient = axios.create({
-  baseURL: IDENTITY_URL,
+  baseURL: API_URL,
   timeout: 20000
 })
 

@@ -11,7 +11,7 @@ public class ProductPropertyValueConfig : IEntityTypeConfiguration<ProductProper
         builder.ToTable("ProductPropertyValues");
         builder.HasKey(p => p.ProductPropertyValueId);
 
-        builder.Property(p => p.CreatedOn).HasPrecision(0).HasDefaultValueSql("(getdate())");
+        builder.Property(p => p.CreatedOn).HasPrecision(0);
         builder.Property(p => p.Value).HasMaxLength(500).IsRequired();
         builder.Property(p => p.ProductId).IsRequired();
         builder.Property(p => p.ProductPropertyId).IsRequired();

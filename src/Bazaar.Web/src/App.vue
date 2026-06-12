@@ -2,6 +2,8 @@
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/auth/auth.store'
 import { startBackgroundSync } from '@/sync/syncEngine'
+import { Toaster } from '@/components/ui/sonner'
+import ConfirmHost from '@/components/ConfirmHost.vue'
 
 const auth = useAuthStore()
 
@@ -12,8 +14,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Toast position="top-center" />
-  <ConfirmDialog />
+  <Toaster position="top-center" :dir="'rtl'" />
+  <ConfirmHost />
   <router-view v-slot="{ Component }">
     <transition name="fade" mode="out-in">
       <component :is="Component" />

@@ -3,8 +3,6 @@ import { computed, ref } from 'vue'
 import { authStorage, type TokenSet } from './tokenStorage'
 import { decodeJwt } from './jwt'
 import { exchangeOtpForToken, requestOtp as apiRequestOtp } from '@/api/identity'
-import { disableDevBypass, enableDevBypass } from './devBypass'
-import { DEV_USER_ID, DEV_USER_PHONE, seedDevData } from './devSeed'
 
 export const useAuthStore = defineStore('auth', () => {
   const tokens = ref<TokenSet | null>(null)
@@ -46,25 +44,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     await authStorage.clear()
-    disableDevBypass()
     tokens.value = null
     phone.value = null
-  }
-
-  async function devLogin(): Promise<{ activeShopId: string }> {
-    const fake = makeDevJwt(DEV_USER_ID, DEV_USER_PHONE)
-    const next: TokenSet = {
-      access_token: fake,
-      refresh_token: null,
-      token_type: 'Bearer',
-      scope: 'dev-bypass',
-      expires_at: Date.now() + 30 * 86_400_000
-    }
-    await authStorage.save(next)
-    tokens.value = next
-    phone.value = DEV_USER_PHONE
-    enableDevBypass()
-    return await seedDevData()
   }
 
   return {
@@ -76,21 +57,6 @@ export const useAuthStore = defineStore('auth', () => {
     hydrate,
     requestOtp,
     verifyOtp,
-    logout,
-    devLogin
+    logout
   }
 })
-
-function makeDevJwt(sub: string, phone: string): string {
-  const b64url = (obj: unknown) =>
-    btoa(JSON.stringify(obj)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')
-  const header = b64url({ alg: 'none', typ: 'JWT' })
-  const payload = b64url({
-    sub,
-    phone_number: phone,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
-    iss: 'dev-bypass',
-    aud: 'bazaar_api'
-  })
-  return `${header}.${payload}.`
-}

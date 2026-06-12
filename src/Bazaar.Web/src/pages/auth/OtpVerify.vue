@@ -3,20 +3,20 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/auth/auth.store'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
+import { Check, Loader2, RefreshCw } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
-const toast = useToast()
 
 const code = ref('')
 const loading = ref(false)
 const resending = ref(false)
 const cooldown = ref(60)
 let timer: number | null = null
-
-const devHint = import.meta.env.VITE_DEV_OTP_HINT === 'true'
 
 function startCooldown() {
   cooldown.value = 60
@@ -46,15 +46,10 @@ async function submit() {
   loading.value = true
   try {
     await auth.verifyOtp(code.value)
-    toast.add({ severity: 'success', summary: t('auth.logged_in'), life: 2000 })
+    toast.success(t('auth.logged_in'))
     router.replace({ path: '/' })
   } catch (e: any) {
-    toast.add({
-      severity: 'error',
-      summary: t('auth.otp_invalid'),
-      detail: e?.response?.data?.error_description ?? e?.message,
-      life: 4000
-    })
+    toast.error(e?.response?.data?.error_description ?? e?.message ?? t('auth.otp_invalid'))
   } finally {
     loading.value = false
   }
@@ -67,7 +62,7 @@ async function resend() {
     await auth.requestOtp(auth.phone)
     startCooldown()
   } catch (e: any) {
-    toast.add({ severity: 'error', summary: t('app.error'), detail: e?.message, life: 4000 })
+    toast.error(e?.message ?? t('app.error'))
   } finally {
     resending.value = false
   }
@@ -80,34 +75,37 @@ async function resend() {
     <p class="muted prompt" dir="ltr">{{ auth.phone }}</p>
 
     <div class="otp-wrap" dir="ltr">
-      <InputOtp v-model="code" :length="4" integer-only />
+      <InputOTP v-model="code" :maxlength="4">
+        <InputOTPGroup>
+          <InputOTPSlot :index="0" />
+          <InputOTPSlot :index="1" />
+          <InputOTPSlot :index="2" />
+          <InputOTPSlot :index="3" />
+        </InputOTPGroup>
+      </InputOTP>
     </div>
 
-    <Button
-      type="submit"
-      :label="t('auth.otp_submit')"
-      icon="pi pi-check"
-      :loading="loading"
-      :disabled="code.length < 4"
-      class="submit"
-      fluid
-    />
+    <p class="muted otp-hint">کد تأیید: 1111</p>
+
+    <Button type="submit" :disabled="loading || code.length < 4" class="submit w-full">
+      <Loader2 v-if="loading" class="size-4 animate-spin" />
+      <Check v-else class="size-4" />
+      {{ t('auth.otp_submit') }}
+    </Button>
 
     <div class="resend">
       <Button
         v-if="cooldown <= 0"
-        :label="t('auth.otp_resend')"
-        icon="pi pi-refresh"
-        severity="secondary"
-        text
-        :loading="resending"
+        type="button"
+        variant="ghost"
+        :disabled="resending"
         @click="resend"
-      />
+      >
+        <Loader2 v-if="resending" class="size-4 animate-spin" />
+        <RefreshCw v-else class="size-4" />
+        {{ t('auth.otp_resend') }}
+      </Button>
       <span v-else class="muted">{{ t('auth.otp_resend_in', { seconds: cooldown }) }}</span>
-    </div>
-
-    <div v-if="devHint" class="dev-hint">
-      <i class="pi pi-info-circle" /> {{ t('auth.otp_dev_hint') }}
     </div>
   </form>
 </template>
@@ -125,7 +123,12 @@ async function resend() {
 .otp-wrap {
   display: flex;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.otp-hint {
+  text-align: center;
+  font-size: 0.85rem;
+  margin: 0 0 1.25rem;
 }
 .submit {
   width: 100%;
@@ -134,16 +137,5 @@ async function resend() {
   text-align: center;
   margin-top: 1rem;
   font-size: 0.9rem;
-}
-.dev-hint {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  background: var(--p-blue-50, #eff6ff);
-  color: var(--p-blue-700, #1d4ed8);
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 </style>

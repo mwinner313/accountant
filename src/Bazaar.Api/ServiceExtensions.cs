@@ -1,6 +1,7 @@
 using Autofac;
 using Bazaar.Data;
 using Bazaar.Handlers.Commands.Shops.Create;
+using Bazaar.Identity.Data;
 using Infra;
 using Infra.Common.Decorators;
 using Infra.EFCore;
@@ -21,11 +22,11 @@ public static class ServiceExtensions
 
     public static void AddDbContextInternal(this IServiceCollection services)
     {
-        var connectionString = _configuration.GetConnectionString("SqlServer");
-        Guard.NotNullOrEmpty(connectionString, nameof(connectionString));
-
         services.AddDbContextPool<BazaarDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseInMemoryDatabase("BazaarDb"));
+
+        services.AddDbContext<IdentityDbContext>(options =>
+            options.UseInMemoryDatabase("BazaarIdentityDb"));
 
         services.AddScoped<DbContext, BazaarDbContext>();
     }
@@ -58,8 +59,7 @@ public static class ServiceExtensions
 
     public static void AddAuthInternal(this IServiceCollection services)
     {
-        var identityUrl = _configuration["Identity:Url"];
-        Guard.NotNullOrEmpty(identityUrl, "Identity:Url");
+        var identityUrl = _configuration["Identity:Url"] ?? "http://localhost:5108";
 
         services.AddAuthentication("Bearer")
             .AddJwtBearer("Bearer", options =>

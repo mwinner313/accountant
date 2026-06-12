@@ -5,9 +5,21 @@ import { useRouter } from 'vue-router'
 import { useShopStore } from '@/stores/shops'
 import { useProductStore } from '@/stores/products'
 import { useCategoryStore } from '@/stores/categories'
-import { useConfirm } from 'primevue/useconfirm'
+import { useConfirm } from '@/composables/useConfirm'
 import { formatDecimal, formatMoney } from '@/i18n/format'
 import { refDebounced } from '@vueuse/core'
+import { Box, Plus, Search, Trash2 } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 const { t } = useI18n()
 const shops = useShopStore()
@@ -18,15 +30,10 @@ const confirm = useConfirm()
 
 const search = ref('')
 const debouncedSearch = refDebounced(search, 300)
-const selectedCat = ref<string | null>(null)
-
-const categoryOptions = computed(() => [
-  { categoryId: null, name: t('app.all') },
-  ...cats.items.map(c => ({ categoryId: c.categoryId, name: c.name }))
-])
+const selectedCat = ref<string>('none')
 
 const filterParams = computed(() => ({
-  categoryId: selectedCat.value,
+  categoryId: selectedCat.value === 'none' ? null : selectedCat.value,
   search: debouncedSearch.value || undefined
 }))
 
@@ -58,7 +65,6 @@ function openNew() {
 function askDelete(id: string) {
   confirm.require({
     message: t('products.delete_confirm'),
-    acceptClass: 'p-button-danger',
     accept: async () => {
       if (shops.activeShopId) await products.remove(shops.activeShopId, id)
     }
@@ -74,33 +80,46 @@ function catName(id?: string | null): string {
 <template>
   <PageHeader :title="t('products.title')">
     <template #actions>
-      <Button :label="t('products.new')" icon="pi pi-plus" size="small" @click="openNew" />
+      <Button size="sm" @click="openNew">
+        <Plus class="size-4" />
+        {{ t('products.new') }}
+      </Button>
     </template>
   </PageHeader>
 
   <div class="filters">
-    <IconField iconPosition="right" fluid>
-      <InputIcon class="pi pi-search" />
-      <InputText v-model="search" :placeholder="t('products.search_placeholder')" fluid />
-    </IconField>
-    <Select
-      v-model="selectedCat"
-      :options="categoryOptions"
-      optionLabel="name"
-      optionValue="categoryId"
-      :placeholder="t('products.category')"
-      class="cat-select"
-    />
+    <div class="search-wrap">
+      <Search class="search-icon size-4" />
+      <Input v-model="search" :placeholder="t('products.search_placeholder')" class="search-input" />
+    </div>
+    <Select v-model="selectedCat">
+      <SelectTrigger class="cat-select">
+        <SelectValue :placeholder="t('products.category')" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="none">{{ t('app.all') }}</SelectItem>
+        <SelectItem
+          v-for="c in cats.items"
+          :key="c.categoryId"
+          :value="String(c.categoryId)"
+        >
+          {{ c.name }}
+        </SelectItem>
+      </SelectContent>
+    </Select>
   </div>
 
-  <ProgressBar v-if="products.loading" mode="indeterminate" style="height: 3px" />
+  <Progress v-if="products.loading" class="h-1 animate-pulse" :model-value="undefined" />
 
   <EmptyState
     v-if="!products.loading && products.items.length === 0"
-    icon="pi-box"
+    icon="box"
     :hint="t('products.no_products')"
   >
-    <Button :label="t('products.new')" icon="pi pi-plus" @click="openNew" class="mt-3" />
+    <Button class="mt-3" @click="openNew">
+      <Plus class="size-4" />
+      {{ t('products.new') }}
+    </Button>
   </EmptyState>
 
   <div v-else>
@@ -112,12 +131,12 @@ function catName(id?: string | null): string {
     >
       <div class="thumb">
         <img v-if="p.picture" :src="p.picture" :alt="p.name" />
-        <i v-else class="pi pi-box" />
+        <Box v-else class="size-6 text-muted-foreground" />
       </div>
       <div class="list-card__body">
         <div class="list-card__title">
           {{ p.name }}
-          <Tag v-if="p._local" value="آفلاین" severity="info" />
+          <Badge v-if="p._local" variant="secondary">آفلاین</Badge>
         </div>
         <div class="list-card__sub">
           {{ catName(p.categoryId) }} • {{ t('products.inventory') }}:
@@ -127,13 +146,13 @@ function catName(id?: string | null): string {
       <div class="prices">
         <div class="list-card__price">{{ formatMoney(p.sellPrice) }}</div>
         <Button
-          icon="pi pi-trash"
-          text
-          rounded
-          size="small"
-          severity="danger"
+          variant="ghost"
+          size="icon"
+          class="size-8"
           @click.stop="askDelete(p.productId)"
-        />
+        >
+          <Trash2 class="size-4 text-destructive" />
+        </Button>
       </div>
     </div>
   </div>
@@ -150,6 +169,21 @@ function catName(id?: string | null): string {
     min-width: 0;
   }
 }
+.search-wrap {
+  position: relative;
+
+  .search-icon {
+    position: absolute;
+    inset-inline-end: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted-foreground);
+    pointer-events: none;
+  }
+  .search-input {
+    padding-inline-end: 2.5rem;
+  }
+}
 .product-card {
   align-items: stretch;
 }
@@ -157,7 +191,7 @@ function catName(id?: string | null): string {
   width: 48px;
   height: 48px;
   border-radius: 10px;
-  background: var(--p-surface-100, #f1f5f9);
+  background: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,10 +202,6 @@ function catName(id?: string | null): string {
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-  i {
-    font-size: 1.25rem;
-    color: var(--p-text-muted-color);
   }
 }
 .prices {

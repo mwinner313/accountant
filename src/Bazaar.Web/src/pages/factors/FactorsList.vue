@@ -1,18 +1,28 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useShopStore } from '@/stores/shops'
 import { useFactorStore } from '@/stores/factors'
 import { FactorType, type FactorTypeValue } from '@/api/endpoints/factors'
 import { toJalali } from '@/i18n/format'
+import { ArrowDownLeft, ArrowUpRight, ChevronLeft } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 const { t } = useI18n()
 const shops = useShopStore()
 const factors = useFactorStore()
 const router = useRouter()
 
-const filter = ref<FactorTypeValue | null>(null)
+const filterStr = ref('all')
+
+const filter = computed<FactorTypeValue | null>(() => {
+  if (filterStr.value === 'all') return null
+  return Number(filterStr.value) as FactorTypeValue
+})
 
 async function reload() {
   if (!shops.activeShopId) return
@@ -22,7 +32,7 @@ async function reload() {
 
 onMounted(reload)
 watch(() => shops.activeShopId, reload)
-watch(filter, reload)
+watch(filterStr, reload)
 
 function open(id: string) {
   router.push({ name: 'factor-edit', params: { id } })
@@ -36,40 +46,32 @@ function newFactor(type: FactorTypeValue) {
 <template>
   <PageHeader :title="t('factors.title')">
     <template #actions>
-      <Button
-        :label="t('factors.new_sell')"
-        icon="pi pi-arrow-up-right"
-        size="small"
-        severity="warning"
-        @click="newFactor(FactorType.Sell)"
-      />
-      <Button
-        :label="t('factors.new_buy')"
-        icon="pi pi-arrow-down-left"
-        size="small"
-        severity="success"
-        @click="newFactor(FactorType.Buy)"
-      />
+      <Button size="sm" variant="outline" @click="newFactor(FactorType.Sell)">
+        <ArrowUpRight class="size-4" />
+        {{ t('factors.new_sell') }}
+      </Button>
+      <Button size="sm" variant="secondary" @click="newFactor(FactorType.Buy)">
+        <ArrowDownLeft class="size-4" />
+        {{ t('factors.new_buy') }}
+      </Button>
     </template>
   </PageHeader>
 
-  <SelectButton
-    v-model="filter"
-    :options="[
-      { value: null, label: t('factors.filter_all') },
-      { value: FactorType.Buy, label: t('factors.type_buy') },
-      { value: FactorType.Sell, label: t('factors.type_sell') }
-    ]"
-    optionLabel="label"
-    optionValue="value"
-    class="filter-bar"
-  />
+  <ToggleGroup v-model="filterStr" type="single" variant="outline" class="filter-bar w-full">
+    <ToggleGroupItem value="all" class="flex-1">{{ t('factors.filter_all') }}</ToggleGroupItem>
+    <ToggleGroupItem :value="String(FactorType.Buy)" class="flex-1">{{
+      t('factors.type_buy')
+    }}</ToggleGroupItem>
+    <ToggleGroupItem :value="String(FactorType.Sell)" class="flex-1">{{
+      t('factors.type_sell')
+    }}</ToggleGroupItem>
+  </ToggleGroup>
 
-  <ProgressBar v-if="factors.loading" mode="indeterminate" style="height: 3px" />
+  <Progress v-if="factors.loading" class="h-1 animate-pulse" :model-value="undefined" />
 
   <EmptyState
     v-if="!factors.loading && factors.items.length === 0"
-    icon="pi-receipt"
+    icon="receipt"
     :hint="t('factors.no_factors')"
   />
 
@@ -81,15 +83,14 @@ function newFactor(type: FactorTypeValue) {
       @click="open(f.factorId)"
     >
       <div class="avatar" :class="{ buy: f.type === FactorType.Buy }">
-        <i
-          :class="['pi', f.type === FactorType.Buy ? 'pi-arrow-down-left' : 'pi-arrow-up-right']"
-        />
+        <ArrowDownLeft v-if="f.type === FactorType.Buy" class="size-5" />
+        <ArrowUpRight v-else class="size-5" />
       </div>
       <div class="list-card__body">
         <div class="list-card__title">
           {{ f.type === FactorType.Buy ? t('factors.type_buy') : t('factors.type_sell') }}
-          <Tag v-if="f.isReversed" :value="t('factors.reversed')" severity="danger" />
-          <Tag v-if="f._local" value="آفلاین" severity="info" />
+          <Badge v-if="f.isReversed" variant="destructive">{{ t('factors.reversed') }}</Badge>
+          <Badge v-if="f._local" variant="secondary">آفلاین</Badge>
         </div>
         <div class="list-card__sub">
           {{ toJalali(f.date) }} • {{ t('factors.item_count', { count: f.itemCount }) }}
@@ -101,7 +102,7 @@ function newFactor(type: FactorTypeValue) {
           <span v-if="f.notes" class="notes">{{ f.notes }}</span>
         </div>
       </div>
-      <i class="pi pi-angle-left muted" />
+      <ChevronLeft class="size-5 muted" />
     </div>
   </div>
 </template>
@@ -109,8 +110,6 @@ function newFactor(type: FactorTypeValue) {
 <style scoped lang="scss">
 .filter-bar {
   margin-bottom: 1rem;
-  display: flex;
-  gap: 0.25rem;
 }
 .avatar {
   width: 40px;
@@ -119,12 +118,12 @@ function newFactor(type: FactorTypeValue) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--p-yellow-100, #fef9c3);
-  color: var(--p-yellow-800, #854d0e);
+  background: oklch(0.96 0.05 95);
+  color: oklch(0.45 0.1 85);
 
   &.buy {
-    background: var(--p-green-100, #dcfce7);
-    color: var(--p-green-700, #15803d);
+    background: oklch(0.95 0.05 145);
+    color: oklch(0.42 0.14 145);
   }
 }
 .dot {

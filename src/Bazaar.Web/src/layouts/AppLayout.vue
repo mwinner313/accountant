@@ -4,9 +4,20 @@ import { usePendingSync } from '@/composables/usePendingSync'
 import { useShopStore } from '@/stores/shops'
 import { useAuthStore } from '@/auth/auth.store'
 import { useRouter } from 'vue-router'
-import { useConfirm } from 'primevue/useconfirm'
+import { useConfirm } from '@/composables/useConfirm'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
+import {
+  Box,
+  ChevronDown,
+  Home,
+  LogOut,
+  Receipt,
+  Settings,
+  Store,
+  Tags,
+  Users
+} from '@lucide/vue'
 
 const { t } = useI18n()
 const { online } = useOnline()
@@ -37,12 +48,12 @@ function doLogout() {
   <div class="app-shell">
     <header class="app-header">
       <button class="link" type="button" @click="pickShop">
-        <i class="pi pi-shop" />
+        <Store class="size-4" />
         <span class="title">{{ activeTitle }}</span>
-        <i class="pi pi-chevron-down small" />
+        <ChevronDown class="size-3 small" />
       </button>
       <button class="icon-btn" type="button" :title="t('app.logout')" @click="doLogout">
-        <i class="pi pi-sign-out" />
+        <LogOut class="size-5" />
       </button>
     </header>
 
@@ -57,27 +68,27 @@ function doLogout() {
 
     <nav class="bottom-nav">
       <router-link :to="{ name: 'dashboard' }">
-        <i class="pi pi-home" />
+        <Home />
         <span>{{ t('nav.dashboard') }}</span>
       </router-link>
       <router-link :to="{ name: 'products' }">
-        <i class="pi pi-box" />
+        <Box />
         <span>{{ t('nav.products') }}</span>
       </router-link>
       <router-link :to="{ name: 'factors' }">
-        <i class="pi pi-receipt" />
+        <Receipt />
         <span>{{ t('nav.factors') }}</span>
       </router-link>
       <router-link :to="{ name: 'counterparties' }">
-        <i class="pi pi-users" />
+        <Users />
         <span>{{ t('nav.counterparties') }}</span>
       </router-link>
       <router-link :to="{ name: 'categories' }">
-        <i class="pi pi-tags" />
+        <Tags />
         <span>{{ t('nav.categories') }}</span>
       </router-link>
       <router-link :to="{ name: 'product-properties' }">
-        <i class="pi pi-cog" />
+        <Settings />
         <span>{{ t('app.settings') }}</span>
       </router-link>
     </nav>
@@ -89,8 +100,8 @@ function doLogout() {
   position: sticky;
   top: 0;
   height: var(--app-header-h);
-  background: var(--p-content-background);
-  border-bottom: 1px solid var(--p-content-border-color);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -112,7 +123,6 @@ function doLogout() {
       font-weight: 700;
     }
     .small {
-      font-size: 0.7rem;
       opacity: 0.6;
     }
   }
@@ -122,7 +132,6 @@ function doLogout() {
     color: inherit;
     padding: 0.5rem;
     cursor: pointer;
-    font-size: 1.1rem;
   }
 }
 </style>

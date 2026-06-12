@@ -1,26 +1,25 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import Components from 'unplugin-vue-components/vite'
-import { PrimeVueResolver } from '@primevue/auto-import-resolver'
 import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const apiUrl = env.VITE_API_URL || 'http://localhost:5108'
-  const identityUrl = env.VITE_IDENTITY_URL || 'http://localhost:5209'
 
   return {
     plugins: [
       vue(),
+      tailwindcss(),
       AutoImport({
         imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],
         dts: 'src/auto-imports.d.ts',
         eslintrc: { enabled: false }
       }),
       Components({
-        resolvers: [PrimeVueResolver()],
         dts: 'src/components.d.ts',
         dirs: ['src/components']
       }),
@@ -106,8 +105,8 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': { target: apiUrl, changeOrigin: true, secure: false },
         '/swagger': { target: apiUrl, changeOrigin: true, secure: false },
-        '/connect': { target: identityUrl, changeOrigin: true, secure: false },
-        '/.well-known': { target: identityUrl, changeOrigin: true, secure: false }
+        '/connect': { target: apiUrl, changeOrigin: true, secure: false },
+        '/.well-known': { target: apiUrl, changeOrigin: true, secure: false }
       }
     },
     build: {

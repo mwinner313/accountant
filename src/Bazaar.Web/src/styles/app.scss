@@ -1,6 +1,3 @@
-@use 'primeicons/primeicons.css';
-@use './primevue.scss';
-
 :root {
   --app-max-width: 720px;
   --app-radius: 14px;
@@ -22,25 +19,12 @@ select {
   font-family: var(--app-font-stack);
 }
 
-// Optional override slot: if you have licensed IRANSansX woff2 files, drop them into
-// `public/fonts/` and uncomment the block below to make them win over Vazirmatn.
-//
-// @font-face {
-//   font-family: 'IRANSansX';
-//   src: url('/fonts/IRANSansX-Variable.woff2') format('woff2-variations');
-//   font-weight: 100 900;
-//   font-style: normal;
-//   font-display: swap;
-// }
-
 html,
 body,
 #app {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: var(--p-surface-50, #f8fafc);
-  color: var(--p-text-color);
   direction: rtl;
   text-align: right;
   -webkit-tap-highlight-color: transparent;
@@ -79,7 +63,7 @@ a {
 }
 
 .muted {
-  color: var(--p-text-muted-color);
+  color: var(--muted-foreground);
 }
 
 .fab {
@@ -92,19 +76,20 @@ a {
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
-  color: var(--p-text-muted-color);
+  color: var(--muted-foreground);
 
-  .pi {
-    font-size: 3rem;
+  svg {
+    width: 3rem;
+    height: 3rem;
     opacity: 0.4;
     display: block;
-    margin-bottom: 1rem;
+    margin: 0 auto 1rem;
   }
 }
 
 .list-card {
-  background: var(--p-content-background);
-  border: 1px solid var(--p-content-border-color);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--app-radius);
   padding: 1rem;
   margin-bottom: 0.75rem;
@@ -112,6 +97,7 @@ a {
   align-items: center;
   gap: 0.75rem;
   transition: transform 0.1s ease;
+  cursor: pointer;
 
   &:active {
     transform: scale(0.99);
@@ -129,22 +115,25 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .list-card__sub {
     font-size: 0.85rem;
-    color: var(--p-text-muted-color);
+    color: var(--muted-foreground);
   }
 
   .list-card__price {
     font-weight: 700;
-    color: var(--p-primary-color);
+    color: var(--primary);
   }
 }
 
 .offline-banner {
-  background: var(--p-yellow-100, #fef3c7);
-  color: var(--p-yellow-900, #713f12);
+  background: oklch(0.95 0.05 95);
+  color: oklch(0.45 0.1 75);
   padding: 0.5rem 1rem;
   text-align: center;
   font-size: 0.85rem;
@@ -157,8 +146,8 @@ a {
   right: 0;
   height: calc(var(--app-bottom-nav-h) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
-  background: var(--p-content-background);
-  border-top: 1px solid var(--p-content-border-color);
+  background: var(--card);
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-around;
   align-items: stretch;
@@ -172,14 +161,15 @@ a {
     justify-content: center;
     gap: 0.25rem;
     font-size: 0.75rem;
-    color: var(--p-text-muted-color);
+    color: var(--muted-foreground);
 
-    .pi {
-      font-size: 1.25rem;
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
     }
 
     &.router-link-active {
-      color: var(--p-primary-color);
+      color: var(--primary);
       font-weight: 700;
     }
   }

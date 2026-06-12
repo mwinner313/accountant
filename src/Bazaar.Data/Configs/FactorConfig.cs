@@ -15,9 +15,6 @@ public class FactorConfig : IEntityTypeConfiguration<Factor>
         builder.Ignore(p => p.UncommittedChanges);
         builder.Ignore(p => p.Version);
 
-        builder.Property(p => p.Id).HasDefaultValueSql("NEWID()");
-        builder.Property(p => p.CreateDate).HasPrecision(0).HasDefaultValueSql("(getdate())");
-
         builder.Property(p => p.ShopId).IsRequired();
         builder.Property(p => p.Type).IsRequired();
         builder.Property(p => p.CounterpartyId).IsRequired(false);
@@ -29,11 +26,13 @@ public class FactorConfig : IEntityTypeConfiguration<Factor>
         builder.HasMany(f => f.Items)
             .WithOne()
             .HasForeignKey(i => i.FactorId)
+            .HasPrincipalKey(f => f.Id)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne<Counterparty>()
             .WithMany()
             .HasForeignKey(f => f.CounterpartyId)
+            .HasPrincipalKey(c => c.Id)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(f => f.CounterpartyId);

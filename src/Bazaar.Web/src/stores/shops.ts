@@ -3,8 +3,6 @@ import { computed, ref } from 'vue'
 import * as repo from '@/db/repositories/shops'
 import { flushOutbox } from '@/sync/syncEngine'
 import type { CachedShop } from '@/db/db'
-import { DevBypassError } from '@/api/http'
-
 const ACTIVE_SHOP_KEY = 'bazaar.activeShop.v1'
 
 export const useShopStore = defineStore('shops', () => {
@@ -36,7 +34,7 @@ export const useShopStore = defineStore('shops', () => {
       try {
         await repo.pullRemote()
       } catch (e: any) {
-        if (!(e instanceof DevBypassError)) error.value = e?.message ?? 'fetch-failed'
+        error.value = e?.message ?? 'fetch-failed'
       }
       await loadLocal()
       if (!activeShopId.value && items.value.length) {

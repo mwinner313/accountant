@@ -3,7 +3,20 @@ import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useShopStore } from '@/stores/shops'
 import { useCategoryStore } from '@/stores/categories'
-import { useConfirm } from 'primevue/useconfirm'
+import { useConfirm } from '@/composables/useConfirm'
+import { Check, Pencil, Plus, Tag, Trash2 } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 
 const { t } = useI18n()
 const shops = useShopStore()
@@ -52,7 +65,6 @@ async function save() {
 function askDelete(id: string) {
   confirm.require({
     message: t('categories.delete_confirm'),
-    acceptClass: 'p-button-danger',
     accept: async () => {
       if (shops.activeShopId) await cats.remove(shops.activeShopId, id)
     }
@@ -63,49 +75,59 @@ function askDelete(id: string) {
 <template>
   <PageHeader :title="t('categories.title')">
     <template #actions>
-      <Button :label="t('categories.new')" icon="pi pi-plus" size="small" @click="openCreate" />
+      <Button size="sm" @click="openCreate">
+        <Plus class="size-4" />
+        {{ t('categories.new') }}
+      </Button>
     </template>
   </PageHeader>
 
-  <ProgressBar v-if="cats.loading" mode="indeterminate" style="height: 3px" />
+  <Progress v-if="cats.loading" class="h-1 animate-pulse" :model-value="undefined" />
 
   <EmptyState
     v-if="!cats.loading && cats.items.length === 0"
-    icon="pi-tags"
+    icon="tags"
     :hint="t('categories.no_categories')"
   >
-    <Button :label="t('categories.new')" icon="pi pi-plus" @click="openCreate" class="mt-3" />
+    <Button class="mt-3" @click="openCreate">
+      <Plus class="size-4" />
+      {{ t('categories.new') }}
+    </Button>
   </EmptyState>
 
   <div v-else>
     <div v-for="c in cats.items" :key="c.categoryId" class="list-card">
-      <div class="avatar"><i class="pi pi-tag" /></div>
+      <div class="avatar"><Tag class="size-5" /></div>
       <div class="list-card__body">
         <div class="list-card__title">
           {{ c.name }}
-          <Tag v-if="c._local" value="آفلاین" severity="info" />
+          <Badge v-if="c._local" variant="secondary">آفلاین</Badge>
         </div>
       </div>
-      <Button icon="pi pi-pencil" text rounded @click="openEdit(c.categoryId, c.name)" />
-      <Button
-        icon="pi pi-trash"
-        text
-        rounded
-        severity="danger"
-        @click="askDelete(c.categoryId)"
-      />
+      <Button variant="ghost" size="icon" @click="openEdit(c.categoryId, c.name)">
+        <Pencil class="size-4" />
+      </Button>
+      <Button variant="ghost" size="icon" @click="askDelete(c.categoryId)">
+        <Trash2 class="size-4 text-destructive" />
+      </Button>
     </div>
   </div>
 
-  <Dialog v-model:visible="dialog" :header="t('categories.new')" modal style="width: min(420px, 92vw)">
-    <label class="field">
-      <span class="label">{{ t('categories.name_label') }}</span>
-      <InputText v-model="name" autofocus fluid />
-    </label>
-    <template #footer>
-      <Button :label="t('app.cancel')" text @click="dialog = false" />
-      <Button :label="t('app.save')" icon="pi pi-check" @click="save" />
-    </template>
+  <Dialog v-model:open="dialog">
+    <DialogContent class="sm:max-w-[420px]">
+      <DialogHeader>
+        <DialogTitle>{{ t('categories.new') }}</DialogTitle>
+      </DialogHeader>
+      <Label for="cat-name">{{ t('categories.name_label') }}</Label>
+      <Input id="cat-name" v-model="name" class="mt-1" autofocus />
+      <DialogFooter>
+        <Button variant="ghost" @click="dialog = false">{{ t('app.cancel') }}</Button>
+        <Button @click="save">
+          <Check class="size-4" />
+          {{ t('app.save') }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   </Dialog>
 </template>
 
@@ -114,20 +136,11 @@ function askDelete(id: string) {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: var(--p-primary-100, #e0e7ff);
-  color: var(--p-primary-color);
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.field {
-  display: block;
-  margin-top: 0.5rem;
-  .label {
-    display: block;
-    margin-bottom: 0.4rem;
-    font-weight: 600;
-  }
 }
 .mt-3 {
   margin-top: 0.75rem;

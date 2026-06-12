@@ -4,10 +4,22 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { refDebounced } from '@vueuse/core'
 import { useCounterpartyStore } from '@/stores/counterparties'
-import { useConfirm } from 'primevue/useconfirm'
+import { useConfirm } from '@/composables/useConfirm'
 import * as api from '@/api/endpoints/counterparties'
 import type { CreateCounterpartyPayload } from '@/api/endpoints/counterparties'
-import { DevBypassError } from '@/api/http'
+import { Check, Pencil, Plus, Search, Trash2, User, X } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -70,10 +82,8 @@ async function openEdit(id: string, name: string) {
             cardNumber: b.cardNumber
           }))
         : [{ name: '', accountNumber: '', shebaNumber: '', cardNumber: '' }]
-  } catch (e) {
-    if (!(e instanceof DevBypassError)) {
-      /* keep name from list */
-    }
+  } catch {
+    /* keep name from list */
   }
 }
 
@@ -124,7 +134,6 @@ function goDetail(counterpartyId: string) {
 function askDelete(id: string) {
   confirm.require({
     message: t('counterparties.delete_confirm'),
-    acceptClass: 'p-button-danger',
     accept: async () => {
       await cps.remove(id)
     }
@@ -135,110 +144,133 @@ function askDelete(id: string) {
 <template>
   <PageHeader :title="t('counterparties.title')">
     <template #actions>
-      <Button :label="t('counterparties.new')" icon="pi pi-plus" size="small" @click="openCreate" />
+      <Button size="sm" @click="openCreate">
+        <Plus class="size-4" />
+        {{ t('counterparties.new') }}
+      </Button>
     </template>
   </PageHeader>
 
-  <IconField class="search-row">
-    <InputIcon class="pi pi-search" />
-    <InputText v-model="search" :placeholder="t('app.search')" fluid />
-  </IconField>
+  <div class="search-row">
+    <Search class="search-icon size-4" />
+    <Input v-model="search" :placeholder="t('app.search')" class="search-input" />
+  </div>
 
-  <ProgressBar v-if="cps.loading" mode="indeterminate" style="height: 3px" />
+  <Progress v-if="cps.loading" class="h-1 animate-pulse" :model-value="undefined" />
 
   <EmptyState
     v-if="!cps.loading && cps.items.length === 0"
-    icon="pi-users"
+    icon="users"
     :hint="t('counterparties.empty')"
   >
-    <Button :label="t('counterparties.new')" icon="pi pi-plus" class="mt-3" @click="openCreate" />
+    <Button class="mt-3" @click="openCreate">
+      <Plus class="size-4" />
+      {{ t('counterparties.new') }}
+    </Button>
   </EmptyState>
 
   <div v-else>
     <div v-for="c in cps.items" :key="c.counterpartyId" class="list-card">
-      <div class="avatar tap" @click="goDetail(c.counterpartyId)"><i class="pi pi-user" /></div>
+      <div class="avatar tap" @click="goDetail(c.counterpartyId)"><User class="size-5" /></div>
       <div class="list-card__body tap" @click="goDetail(c.counterpartyId)">
         <div class="list-card__title">
           {{ c.fullName }}
-          <Tag v-if="c._local" value="آفلاین" severity="info" />
+          <Badge v-if="c._local" variant="secondary">آفلاین</Badge>
         </div>
       </div>
-      <Button
-        icon="pi pi-pencil"
-        text
-        rounded
-        @click.stop="openEdit(c.counterpartyId, c.fullName)"
-      />
-      <Button
-        icon="pi pi-trash"
-        text
-        rounded
-        severity="danger"
-        @click.stop="askDelete(c.counterpartyId)"
-      />
+      <Button variant="ghost" size="icon" @click.stop="openEdit(c.counterpartyId, c.fullName)">
+        <Pencil class="size-4" />
+      </Button>
+      <Button variant="ghost" size="icon" @click.stop="askDelete(c.counterpartyId)">
+        <Trash2 class="size-4 text-destructive" />
+      </Button>
     </div>
   </div>
 
-  <Dialog
-    v-model:visible="dialog"
-    :header="mode === 'create' ? t('counterparties.new') : t('app.edit')"
-    modal
-    style="width: min(520px, 94vw)"
-  >
-    <div class="dlg">
-      <label class="field">
-        <span class="label">{{ t('counterparties.full_name') }}</span>
-        <InputText v-model="fullName" fluid />
-      </label>
+  <Dialog v-model:open="dialog">
+    <DialogContent class="sm:max-w-[520px]">
+      <DialogHeader>
+        <DialogTitle>{{ mode === 'create' ? t('counterparties.new') : t('app.edit') }}</DialogTitle>
+      </DialogHeader>
+      <div class="dlg">
+        <div class="field">
+          <Label for="cp-full-name">{{ t('counterparties.full_name') }}</Label>
+          <Input id="cp-full-name" v-model="fullName" class="mt-1" />
+        </div>
 
-      <h4 class="sub">{{ t('counterparties.phones') }}</h4>
-      <div v-for="(p, i) in phones" :key="'p' + i" class="row-inline">
-        <InputText v-model="p.number" :placeholder="t('counterparties.phone_placeholder')" fluid />
-        <Button
-          v-if="phones.length > 1"
-          icon="pi pi-times"
-          text
-          rounded
-          severity="danger"
-          @click="removePhone(i)"
-        />
-      </div>
-      <Button type="button" :label="t('counterparties.add_phone')" text size="small" @click="addPhone" />
+        <h4 class="sub">{{ t('counterparties.phones') }}</h4>
+        <div v-for="(p, i) in phones" :key="'p' + i" class="row-inline">
+          <Input v-model="p.number" :placeholder="t('counterparties.phone_placeholder')" />
+          <Button
+            v-if="phones.length > 1"
+            variant="ghost"
+            size="icon"
+            @click="removePhone(i)"
+          >
+            <X class="size-4 text-destructive" />
+          </Button>
+        </div>
+        <Button type="button" variant="ghost" size="sm" @click="addPhone">
+          {{ t('counterparties.add_phone') }}
+        </Button>
 
-      <h4 class="sub">{{ t('counterparties.bank_accounts') }}</h4>
-      <div v-for="(b, i) in bankAccounts" :key="'b' + i" class="bank-block">
-        <InputText v-model="b.name" :placeholder="t('counterparties.bank_name')" fluid class="mb-2" />
-        <InputText v-model="b.accountNumber" :placeholder="t('counterparties.account_number')" fluid class="mb-2" />
-        <InputText v-model="b.shebaNumber" :placeholder="t('counterparties.sheba')" fluid class="mb-2" />
-        <InputText v-model="b.cardNumber" :placeholder="t('counterparties.card')" fluid class="mb-2" />
-        <Button
-          v-if="bankAccounts.length > 1"
-          :label="t('counterparties.remove_bank')"
-          text
-          size="small"
-          severity="danger"
-          @click="removeBank(i)"
-        />
+        <h4 class="sub">{{ t('counterparties.bank_accounts') }}</h4>
+        <div v-for="(b, i) in bankAccounts" :key="'b' + i" class="bank-block">
+          <Input v-model="b.name" :placeholder="t('counterparties.bank_name')" class="mb-2" />
+          <Input
+            v-model="b.accountNumber"
+            :placeholder="t('counterparties.account_number')"
+            class="mb-2"
+          />
+          <Input v-model="b.shebaNumber" :placeholder="t('counterparties.sheba')" class="mb-2" />
+          <Input v-model="b.cardNumber" :placeholder="t('counterparties.card')" class="mb-2" />
+          <Button
+            v-if="bankAccounts.length > 1"
+            variant="ghost"
+            size="sm"
+            @click="removeBank(i)"
+          >
+            {{ t('counterparties.remove_bank') }}
+          </Button>
+        </div>
+        <Button type="button" variant="ghost" size="sm" @click="addBank">
+          {{ t('counterparties.add_bank') }}
+        </Button>
       </div>
-      <Button type="button" :label="t('counterparties.add_bank')" text size="small" @click="addBank" />
-    </div>
-    <template #footer>
-      <Button :label="t('app.cancel')" text @click="dialog = false" />
-      <Button :label="t('app.save')" icon="pi pi-check" @click="save" />
-    </template>
+      <DialogFooter>
+        <Button variant="ghost" @click="dialog = false">{{ t('app.cancel') }}</Button>
+        <Button @click="save">
+          <Check class="size-4" />
+          {{ t('app.save') }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   </Dialog>
 </template>
 
 <style scoped lang="scss">
 .search-row {
+  position: relative;
   margin-bottom: 1rem;
+
+  .search-icon {
+    position: absolute;
+    inset-inline-end: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted-foreground);
+    pointer-events: none;
+  }
+  .search-input {
+    padding-inline-end: 2.5rem;
+  }
 }
 .avatar {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: var(--p-primary-100, #e0e7ff);
-  color: var(--p-primary-color);
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,12 +282,6 @@ function askDelete(id: string) {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-}
-.field .label {
-  display: block;
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-bottom: 0.35rem;
 }
 .sub {
   margin: 0.5rem 0 0;
@@ -270,7 +296,7 @@ function askDelete(id: string) {
 .bank-block {
   padding: 0.75rem;
   border-radius: 10px;
-  border: 1px solid var(--p-content-border-color);
+  border: 1px solid var(--border);
   margin-bottom: 0.5rem;
 }
 .mb-2 {
